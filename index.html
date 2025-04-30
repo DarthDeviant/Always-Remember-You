@@ -1,425 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>DBDS - Always Remember You</title>
   <style>
     body {
-      font-family: 'Roboto', Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      padding: 20px;
-    }
-
-    header {
       display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 20px;
-      padding: 20px;
-      background: #181818;
-      border-radius: 10px;
+      height: 100vh;
+      background: linear-gradient(135deg, #FFD1DC, #BDE0FE);
+      color: white;
+      font-family: Arial, sans-serif;
     }
-
-    header img {
-      width: 200px;
-      height: 200px;
-      border-radius: 5px;
-      object-fit: cover;
-      cursor: pointer;
+    .player {
+      width: 400px;
+      background: #2C2C2E;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
     }
-
-    .info {
-      flex-grow: 1;
+    .album-art {
+      width: 150px;
+      height: 150px;
+      background: url('cover.png') no-repeat center center;
+      background-size: cover;
+      margin: auto;
+      border-radius: 12px;
     }
-
-    .info h1 {
-      font-size: 3rem;
-      margin: 0;
-      font-weight: bold;
-    }
-
-    .info p {
-      font-size: 1.2rem;
-      color: #b3b3b3;
-      margin: 10px 0;
-    }
-
-    .controls {
-      display: flex;
-      gap: 15px;
-      align-items: center;
+    .track-info {
       margin-top: 15px;
     }
-
-    .controls button {
-      background: none;
-      border: none;
-      cursor: pointer;
+    .controls {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-around;
+      margin-top: 20px;
     }
-
-    .controls .icon {
-      width: 24px;
-      height: 24px;
-    }
-
-    .controls .play {
-      background: #1ed760;
-      border-radius: 50%;
+    .button {
       width: 50px;
       height: 50px;
-    }
-
-    .controls .play .icon {
-      width: 30px;
-      height: 30px;
-    }
-
-    .controls button:hover .icon {
-      filter: brightness(1.2);
-    }
-
-    .track-list {
-      margin-top: 20px;
-      background: #181818;
-      border-radius: 10px;
-      padding: 10px;
-    }
-
-    .track-list table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .track-list th, .track-list td {
-      text-align: left;
-      padding: 10px;
-      font-size: 1rem;
-    }
-
-    .track-list th {
-      color: #b3b3b3;
-      border-bottom: 1px solid #282828;
-    }
-
-    .track-list tr {
-      cursor: pointer;
-      border-bottom: 1px solid #282828;
-      transition: background-color 0.2s;
-    }
-
-    .track-list tr:hover {
-      background-color: #282828;
-    }
-
-    .track-list td {
-      color: #fff;
-    }
-
-    .player {
-      text-align: center;
-      margin-top: 20px;
-      padding: 20px;
-      background: #181818;
-      border-radius: 10px;
-    }
-
-    audio {
-      width: 100%;
-      margin: 10px 0;
-    }
-
-    #current-track {
-      margin-top: 10px;
-      color: #b3b3b3;
-    }
-
-    .player-buttons {
+      background: #3A3A3C;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
-      gap: 20px;
-    }
-
-    .player-buttons button {
-      background: #282828;
-      border: none;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .player-buttons button:hover {
-      background: #1ed760;
-    }
-
-    .dialog-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      display: none;
       align-items: center;
-      justify-content: center;
-      z-index: 10;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      font-size: 1.2rem;
     }
-
-    .dialog-overlay img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
+    .button:hover {
+      background: #555;
+      transform: scale(1.1);
+    }
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #444;
+      margin-top: 20px;
+      border-radius: 5px;
+      position: relative;
+      cursor: pointer;
+    }
+    .progress-bar {
+      height: 6px;
+      background: white;
+      width: 0%;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <img id="album-cover" src="image.jpg" alt="Album Cover" onclick="openDialog()">
-      <div class="info">
-        <h1 id="album-name">Album Name</h1>
-        <p id="album-info">Album Year · Total Songs · Total Length</p>
-        <div class="controls">
-          <button class="heart">
-            <img src="assets/icons/heart.png" alt="Heart" class="icon">
-          </button>
-          <button class="play" onclick="playFirstTrack()">
-            <img src="assets/icons/play.png" alt="Play" class="icon">
-          </button>
-          <button class="shuffle" onclick="shuffleTracks()">
-            <img src="assets/icons/shuffle.png" alt="Shuffle" class="icon">
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <div class="track-list">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Length</th>
-          </tr>
-        </thead>
-        <tbody id="track-table">
-          <!-- Tracks will be populated dynamically -->
-        </tbody>
-      </table>
+  <div class="player">
+    <div class="album-art" id="album-art"></div>
+    <div class="track-info">
+      <h3 id="track-title">Synthia</h3>
+      <p id="track-artist">Arcsin - Death By Deviated Septum</p>
     </div>
-
-    <div class="player">
-      <audio id="audio-player" controls>
-        <source id="audio-source" src="" type="audio/mpeg">
-        Your browser does not support the audio element.
-      </audio>
-      <p id="current-track">Now Playing: None</p>
-      <div class="player-buttons">
-        <button onclick="playPreviousTrack()">⏮ Previous</button>
-        <button onclick="playNextTrack()">⏭ Next</button>
-      </div>
+    <audio id="audio" src="song1.mp3" loop></audio>
+    <div class="progress-container" onclick="setProgress(event)">
+      <div class="progress-bar" id="progress-bar"></div>
     </div>
-  </div>
-
-  <div id="dialog-overlay" class="dialog-overlay" onclick="closeDialog()">
-    <img id="dialog-image" src="image.jpg" alt="Album Cover">
+    <div class="controls">
+      <div class="button" onclick="previousTrack()">⏮️</div>
+      <div class="button" onclick="togglePlayPause()">⏯️</div>
+      <div class="button" onclick="nextTrack()">⏭️</div>
+    </div>
   </div>
 
   <script>
-  let trackOrder = [];
-  let currentTrackIndex = -1; // To track the current playing index
+    const audio = document.getElementById('audio');
+    const progressBar = document.getElementById('progress-bar');
+    const trackTitle = document.getElementById('track-title');
+    const trackArtist = document.getElementById('track-artist');
 
-  async function loadAlbumData() {
-    try {
-      const response = await fetch('data/album-data.json');
-      if (!response.ok) throw new Error('Failed to fetch album data');
-      const data = await response.json();
+    const tracks = [
+      { src: 'Some.mp3', title: 'Lamppost', artist: 'Arctan - Always Remember You' },
+      { src: 'BELIEVE.mp3', title: 'Believe', artist: 'Always Remember You' },
+      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Always Remember You' }
+    ];
 
-      // Update album info
-      document.getElementById('album-cover').src = data.cover;
-      document.getElementById('dialog-image').src = data.cover;
-      document.getElementById('album-name').textContent = data.name;
+    let currentTrackIndex = 0;
 
-      // Populate track table
-      const trackTable = document.getElementById('track-table');
-      const tracks = data.tracks;
-
-      trackOrder = tracks; // Store the original order
-      let totalSeconds = 0;
-  
-      for (let i = 0; i < tracks.length; i++) {
-        const track = tracks[i];
-        
-        // Create a new row for each track
-        const row = document.createElement('tr');
-        row.setAttribute('data-track', track.file);
-        row.innerHTML = `
-          <td>${i + 1}</td>
-          <td>${track.title}</td>
-          <td>${formatDuration(track.duration)}</td>
-        `;
-
-        // Check if the track file exists
-        const trackAccessible = await checkFileAccessibility(`tracks/${track.file}`);
-        if (!trackAccessible) {
-          row.classList.add('unavailable'); // Add a class to grey out the row
-          row.style.color = '#888'; // Grey out the text
-          track.inaccessible = true; // Mark the track as inaccessible
-        } else {
-          // Add click event listener to play the track
-          row.addEventListener('click', () => {
-            currentTrackIndex = i; // Update the current track index
-            playTrack(track.file, track.title);
-          });
-          totalSeconds += track.duration;
-        }
-
-        trackTable.appendChild(row);
-      }
-
-      document.getElementById('album-info').textContent = `${data.year} · ${tracks.length} songs · ${formatDuration(totalSeconds)}`;
-    } catch (error) {
-      console.error('Error loading album data:', error);
+    function loadTrack(index) {
+      const track = tracks[index];
+      audio.src = track.src;
+      trackTitle.textContent = track.title;
+      trackArtist.textContent = track.artist;
+      audio.play();
     }
-  }
 
-  async function checkFileAccessibility(url) {
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  function formatDuration(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }
-
-  function playTrack(file, title) {
-    const audioPlayer = document.getElementById('audio-player');
-    const currentTrackText = document.getElementById('current-track');
-
-    audioPlayer.src = `tracks/${file}`;
-    audioPlayer.play();
-    currentTrackText.textContent = `Now Playing: ${title}`;
-
-    // Add timeupdate event listener to handle skipping
-    audioPlayer.ontimeupdate = () => {
-      if (audioPlayer.duration - audioPlayer.currentTime <= 4) {
-        // Ensure the next track is prepared for playback
-        audioPlayer.onended = () => playNextTrack();
-      }
-    };
-
-    // Ensure next track plays when the song ends
-    audioPlayer.onended = playNextTrack;
-  }
-
-  function playFirstTrack() {
-    if (trackOrder.length > 0) {
-      currentTrackIndex = 0; // Set to the first track
-      playNextAccessibleTrack(); // Play the first accessible track
-    }
-  }
-
-  function playNextTrack() {
-    if (trackOrder.length > 0) {
-      currentTrackIndex = (currentTrackIndex + 1) % trackOrder.length;
-      playNextAccessibleTrack(); // Play the next accessible track
-    }
-  }
-
-  function playPreviousTrack() {
-    if (trackOrder.length > 0) {
-      currentTrackIndex = (currentTrackIndex - 1 + trackOrder.length) % trackOrder.length;
-      playPreviousAccessibleTrack(); // Play the previous accessible track
-    }
-  }
-
-  function playNextAccessibleTrack() {
-    for (let i = currentTrackIndex; i < trackOrder.length; i++) {
-      const track = trackOrder[i];
-      if (!track.inaccessible) {
-        currentTrackIndex = i;
-        playTrack(track.file, track.title);
-        return;
-      }
-    }
-    console.warn('No accessible tracks found to play next.');
-  }
-
-  function playPreviousAccessibleTrack() {
-    for (let i = currentTrackIndex; i >= 0; i--) {
-      const track = trackOrder[i];
-      if (!track.inaccessible) {
-        currentTrackIndex = i;
-        playTrack(track.file, track.title);
-        return;
-      }
-    }
-    console.warn('No accessible tracks found to play previous.');
-  }
-
-  function shuffleTracks() {
-    const shuffled = [...trackOrder].sort(() => Math.random() - 0.5);
-    const trackTable = document.getElementById('track-table');
-    trackTable.innerHTML = '';
-
-    shuffled.forEach((track, index) => {
-      const row = document.createElement('tr');
-      row.setAttribute('data-track', track.file);
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${track.title}</td>
-        <td>${formatDuration(track.duration)}</td>
-      `;
-
-      if (track.inaccessible) {
-        row.classList.add('unavailable');
-        row.style.color = '#888';
+    function togglePlayPause() {
+      if (audio.paused) {
+        audio.play();
       } else {
-        row.addEventListener('click', () => {
-          currentTrackIndex = index; // Update the current track index
-          playTrack(track.file, track.title);
-        });
+        audio.pause();
       }
+    }
 
-      trackTable.appendChild(row);
-    });
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+    }
 
-    trackOrder = shuffled; // Update the global track order
-    currentTrackIndex = -1; // Reset current track index since the order changed
-  }
+    function previousTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
+    }
 
-  function openDialog() {
-    document.getElementById('dialog-overlay').style.display = 'flex';
-  }
+    function updateProgress() {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = progress + '%';
+    }
 
-  function closeDialog() {
-    document.getElementById('dialog-overlay').style.display = 'none';
-  }
+    function setProgress(event) {
+      const width = event.currentTarget.clientWidth;
+      const clickX = event.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
+    }
 
-  // Initialize the player
-  loadAlbumData();
-</script>
+    audio.addEventListener('timeupdate', updateProgress);
 
-
-
+    // Optional: auto-load first track
+    window.onload = () => {
+      loadTrack(currentTrackIndex);
+    };
+  </script>
 </body>
 </html>
