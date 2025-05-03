@@ -25,8 +25,8 @@
     .album-art {
       width: 150px;
       height: 150px;
-      background: url('cover.png') no-repeat center center;
       background-size: cover;
+      background-position: center;
       margin: auto;
       border-radius: 12px;
     }
@@ -112,21 +112,40 @@
     const volumeSlider = document.getElementById('volume-slider');
 
     const tracks = [
-      { src: 'Some.mp3', title: 'Lamppost', artist: 'Arctan - Always Remember You', art: 'art1.png' },
-      { src: 'BELIEVE.mp3', title: 'Believe', artist: 'Always Remember You', art: 'art2.png' },
-      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Always Remember You', art: 'cover.png' }
+      {
+        src: 'Some.mp3',
+        title: 'Lamppost',
+        artist: 'Arctan - Always Remember You',
+        art: 'art1.png'
+      },
+      {
+        src: 'BELIEVE.mp3',
+        title: 'Believe',
+        artist: 'Always Remember You',
+        art: 'art2.png'
+      },
+      {
+        src: 'Synthia.mp3',
+        title: 'Synthia',
+        artist: 'Always Remember You',
+        art: 'cover.png'
+      }
     ];
 
     let currentTrackIndex = 2;
 
-    function loadTrack(index) {
+    function loadTrack(index, autoplay = true) {
       const track = tracks[index];
       audio.src = track.src;
       trackTitle.textContent = track.title;
       trackArtist.textContent = track.artist;
       albumArt.style.backgroundImage = `url('${track.art}')`;
-      audio.play();
-      playPauseBtn.textContent = '⏸️';
+      if (autoplay) {
+        audio.play();
+        playPauseBtn.textContent = '⏸️';
+      } else {
+        playPauseBtn.textContent = '▶️';
+      }
     }
 
     function togglePlayPause() {
@@ -165,11 +184,17 @@
       audio.volume = volumeSlider.value;
     }
 
+    // Auto-play next song when current ends
+    audio.addEventListener('ended', () => {
+      nextTrack();
+    });
+
     audio.addEventListener('timeupdate', updateProgress);
     volumeSlider.addEventListener('input', updateVolume);
 
+    // Load initial track
     window.onload = () => {
-      loadTrack(currentTrackIndex);
+      loadTrack(currentTrackIndex, true);
     };
   </script>
 </body>
