@@ -3,76 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DBDS - Always Remember You</title>
+  <title>Always Remember You - DBDS</title>
   <style>
     body {
+      margin: 0;
+      background: linear-gradient(to bottom right, #0f0f0f, #1a1a1a);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: linear-gradient(135deg, #FFD1DC, #BDE0FE);
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
     }
     .player {
-      width: 400px;
-      background: #2C2C2E;
-      padding: 30px;
+      background: #202020;
       border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
       text-align: center;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     }
     .album-art {
-      width: 150px;
-      height: 150px;
+      width: 100%;
+      height: 300px;
       background-size: cover;
       background-position: center;
-      margin: auto;
       border-radius: 12px;
+      margin-bottom: 20px;
     }
-    .track-info {
-      margin-top: 15px;
+    .track-info h3 {
+      margin: 10px 0 4px;
+      font-size: 1.4rem;
+    }
+    .track-info p {
+      margin: 0;
+      color: #aaa;
+      font-size: 0.95rem;
     }
     .controls {
       display: flex;
-      justify-content: space-around;
+      justify-content: center;
       margin-top: 20px;
     }
     .button {
+      background: #333;
+      margin: 0 10px;
       width: 50px;
       height: 50px;
-      background: #3A3A3C;
       border-radius: 50%;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
       font-size: 1.2rem;
+      transition: 0.2s;
     }
     .button:hover {
       background: #555;
-      transform: scale(1.1);
     }
     .progress-container {
-      width: 100%;
-      height: 6px;
       background: #444;
+      height: 6px;
+      width: 100%;
       margin-top: 20px;
       border-radius: 5px;
-      position: relative;
       cursor: pointer;
+      position: relative;
     }
     .progress-bar {
       height: 6px;
-      background: white;
       width: 0%;
+      background: #fff;
       border-radius: 5px;
+    }
+    .time-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 4px;
     }
     .volume-container {
       margin-top: 20px;
     }
-    .volume-container input[type="range"] {
+    input[type=range] {
       width: 100%;
       accent-color: white;
     }
@@ -80,15 +94,20 @@
 </head>
 <body>
   <div class="player">
-    <div class="album-art" id="album-art"></div>
+    <div class="album-art" id="album-art" style="background-image: url('cover.png');"></div>
     <div class="track-info">
       <h3 id="track-title">Synthia</h3>
-      <p id="track-artist">Arcsin - Death By Deviated Septum</p>
+      <p id="track-artist">Arcsin – Always Remember You</p>
     </div>
+
     <audio id="audio"></audio>
 
     <div class="progress-container" onclick="setProgress(event)">
       <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="time-display">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
     </div>
 
     <div class="controls">
@@ -107,28 +126,26 @@
     const progressBar = document.getElementById('progress-bar');
     const trackTitle = document.getElementById('track-title');
     const trackArtist = document.getElementById('track-artist');
-    const albumArt = document.getElementById('album-art');
     const playPauseBtn = document.getElementById('playPauseBtn');
     const volumeSlider = document.getElementById('volume-slider');
+    const currentTimeDisplay = document.getElementById('current-time');
+    const durationDisplay = document.getElementById('duration');
 
     const tracks = [
       {
         src: 'Some.mp3',
         title: 'Lamppost',
-        artist: 'Arctan - Always Remember You',
-        art: 'art1.png'
+        artist: 'Arctan – Always Remember You',
       },
       {
         src: 'BELIEVE.mp3',
         title: 'Believe',
         artist: 'Always Remember You',
-        art: 'art2.png'
       },
       {
         src: 'Synthia.mp3',
         title: 'Synthia',
-        artist: 'Always Remember You',
-        art: 'cover.png'
+        artist: 'Arcsin – Death By Deviated Septum',
       }
     ];
 
@@ -139,10 +156,8 @@
       audio.src = track.src;
       trackTitle.textContent = track.title;
       trackArtist.textContent = track.artist;
-      albumArt.style.backgroundImage = `url('${track.art}')`;
       if (autoplay) {
-        audio.play();
-        playPauseBtn.textContent = '⏸️';
+        fadeInPlay();
       } else {
         playPauseBtn.textContent = '▶️';
       }
@@ -150,8 +165,7 @@
 
     function togglePlayPause() {
       if (audio.paused) {
-        audio.play();
-        playPauseBtn.textContent = '⏸️';
+        fadeInPlay();
       } else {
         audio.pause();
         playPauseBtn.textContent = '▶️';
@@ -159,18 +173,26 @@
     }
 
     function nextTrack() {
-      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-      loadTrack(currentTrackIndex);
+      fadeOut(() => {
+        currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+        loadTrack(currentTrackIndex);
+      });
     }
 
     function previousTrack() {
-      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-      loadTrack(currentTrackIndex);
+      fadeOut(() => {
+        currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+        loadTrack(currentTrackIndex);
+      });
     }
 
     function updateProgress() {
-      const progress = (audio.currentTime / audio.duration) * 100;
-      progressBar.style.width = progress + '%';
+      if (audio.duration) {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = percent + '%';
+        currentTimeDisplay.textContent = formatTime(audio.currentTime);
+        durationDisplay.textContent = formatTime(audio.duration);
+      }
     }
 
     function setProgress(event) {
@@ -184,17 +206,51 @@
       audio.volume = volumeSlider.value;
     }
 
-    // Auto-play next song when current ends
-    audio.addEventListener('ended', () => {
-      nextTrack();
-    });
+    function fadeOut(callback) {
+      let vol = audio.volume;
+      const step = vol / 10;
+      const fade = setInterval(() => {
+        if (vol > step) {
+          vol -= step;
+          audio.volume = vol;
+        } else {
+          clearInterval(fade);
+          audio.pause();
+          callback();
+        }
+      }, 50);
+    }
 
+    function fadeInPlay() {
+      audio.volume = 0;
+      audio.play();
+      playPauseBtn.textContent = '⏸️';
+      let vol = 0;
+      const target = volumeSlider.value;
+      const step = target / 10;
+      const fade = setInterval(() => {
+        if (vol < target - step) {
+          vol += step;
+          audio.volume = vol;
+        } else {
+          clearInterval(fade);
+          audio.volume = target;
+        }
+      }, 50);
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    audio.addEventListener('ended', nextTrack);
     audio.addEventListener('timeupdate', updateProgress);
     volumeSlider.addEventListener('input', updateVolume);
 
-    // Load initial track
     window.onload = () => {
-      loadTrack(currentTrackIndex, true);
+      loadTrack(currentTrackIndex);
     };
   </script>
 </body>
