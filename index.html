@@ -13,6 +13,7 @@
       background: linear-gradient(135deg, #FFD1DC, #BDE0FE);
       color: white;
       font-family: Arial, sans-serif;
+      margin: 0;
     }
     .player {
       width: 400px;
@@ -68,6 +69,13 @@
       width: 0%;
       border-radius: 5px;
     }
+    .volume-container {
+      margin-top: 20px;
+    }
+    .volume-container input[type="range"] {
+      width: 100%;
+      accent-color: white;
+    }
   </style>
 </head>
 <body>
@@ -77,14 +85,20 @@
       <h3 id="track-title">Synthia</h3>
       <p id="track-artist">Arcsin - Death By Deviated Septum</p>
     </div>
-    <audio id="audio" src="song1.mp3" loop></audio>
+    <audio id="audio"></audio>
+
     <div class="progress-container" onclick="setProgress(event)">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
+
     <div class="controls">
       <div class="button" onclick="previousTrack()">⏮️</div>
-      <div class="button" onclick="togglePlayPause()">⏯️</div>
+      <div class="button" id="playPauseBtn" onclick="togglePlayPause()">▶️</div>
       <div class="button" onclick="nextTrack()">⏭️</div>
+    </div>
+
+    <div class="volume-container">
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
     </div>
   </div>
 
@@ -93,28 +107,35 @@
     const progressBar = document.getElementById('progress-bar');
     const trackTitle = document.getElementById('track-title');
     const trackArtist = document.getElementById('track-artist');
+    const albumArt = document.getElementById('album-art');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const volumeSlider = document.getElementById('volume-slider');
 
     const tracks = [
-      { src: 'Some.mp3', title: 'Lamppost', artist: 'Arctan - Always Remember You' },
-      { src: 'BELIEVE.mp3', title: 'Believe', artist: 'Always Remember You' },
-      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Always Remember You' }
+      { src: 'Some.mp3', title: 'Lamppost', artist: 'Arctan - Always Remember You', art: 'art1.png' },
+      { src: 'BELIEVE.mp3', title: 'Believe', artist: 'Always Remember You', art: 'art2.png' },
+      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Always Remember You', art: 'cover.png' }
     ];
 
-    let currentTrackIndex = 0;
+    let currentTrackIndex = 2;
 
     function loadTrack(index) {
       const track = tracks[index];
       audio.src = track.src;
       trackTitle.textContent = track.title;
       trackArtist.textContent = track.artist;
+      albumArt.style.backgroundImage = `url('${track.art}')`;
       audio.play();
+      playPauseBtn.textContent = '⏸️';
     }
 
     function togglePlayPause() {
       if (audio.paused) {
         audio.play();
+        playPauseBtn.textContent = '⏸️';
       } else {
         audio.pause();
+        playPauseBtn.textContent = '▶️';
       }
     }
 
@@ -140,9 +161,13 @@
       audio.currentTime = (clickX / width) * duration;
     }
 
-    audio.addEventListener('timeupdate', updateProgress);
+    function updateVolume() {
+      audio.volume = volumeSlider.value;
+    }
 
-    // Optional: auto-load first track
+    audio.addEventListener('timeupdate', updateProgress);
+    volumeSlider.addEventListener('input', updateVolume);
+
     window.onload = () => {
       loadTrack(currentTrackIndex);
     };
