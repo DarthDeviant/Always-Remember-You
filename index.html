@@ -3,184 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Always Remember You - DBDS</title>
+  <title>DBDS - Always Remember You</title>
   <style>
     body {
-      background: black;
-      color: white;
-      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      background: linear-gradient(135deg, #ff77aa, #77ccff);
+      color: white;
+      font-family: Arial, sans-serif;
       margin: 0;
     }
     .player {
+      width: 100%;
+      max-width: 400px;
+      background: #121212;
+      padding: 30px;
+      border-radius: 20px;
       text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
-    .cover {
-      width: 300px;
-      height: 300px;
+    .album-art {
+      width: 100%;
+      max-width: 200px;
+      height: 200px;
+      background: url('cover.png') no-repeat center center;
       background-size: cover;
-      background-position: center;
-      border-radius: 15px;
-      margin-bottom: 20px;
+      margin: 0 auto 20px auto;
+      border-radius: 16px;
     }
-    .track-info {
-      margin-bottom: 20px;
-    }
-    .track-info h2, .track-info h3 {
+    .track-info h3, .track-info p {
       margin: 5px 0;
     }
-    .controls button {
-      background: none;
-      border: 1px solid white;
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .button {
+      width: 48px;
+      height: 48px;
+      background: #1e1e1e;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 1.5rem;
       color: white;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+    .button:hover {
+      background: #333;
+    }
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      margin: 20px 0;
       cursor: pointer;
     }
-    .progress {
-      width: 300px;
-      height: 5px;
-      background: grey;
-      margin: 10px auto;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .progress-filled {
-      height: 100%;
+    .progress-bar {
+      height: 6px;
       background: white;
       width: 0%;
+      border-radius: 3px;
     }
-    .volume {
+    .volume-slider {
+      width: 100%;
       margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <div class="player">
-    <div class="cover" id="cover" style="background-image: url('cover.png');"></div>
+    <div class="album-art" id="album-art"></div>
     <div class="track-info">
-      <h2 id="title">Synthia</h2>
-      <h3 id="artist">Arcsin – Death By Deviated Septum</h3>
+      <h3 id="track-title">Synthia</h3>
+      <p id="track-artist">Arcsin - Death By Deviated Septum</p>
     </div>
     <audio id="audio" src="Synthia.mp3"></audio>
-    <div class="progress" onclick="seek(event)">
-      <div class="progress-filled" id="progress"></div>
+    <div class="progress-container" onclick="setProgress(event)">
+      <div class="progress-bar" id="progress-bar"></div>
     </div>
-    <div id="time">0:00 / 0:00</div>
     <div class="controls">
-      <button onclick="previous()">⏮️</button>
-      <button onclick="togglePlay()" id="playPause">▶️</button>
-      <button onclick="next()">⏭️</button>
-      <button onclick="toggleLoop()" id="loop">🔁</button>
-      <button onclick="toggleShuffle()" id="shuffle">🔀</button>
+      <div class="button" onclick="previousTrack()">⏮️</div>
+      <div class="button" onclick="togglePlayPause()">⏯️</div>
+      <div class="button" onclick="nextTrack()">⏭️</div>
     </div>
-    <div class="volume">
-      Volume: <input type="range" min="0" max="1" step="0.01" id="volume" value="1">
-    </div>
+    <input type="range" min="0" max="1" step="0.01" value="1" class="volume-slider" onchange="setVolume(this.value)" />
   </div>
+
   <script>
     const audio = document.getElementById('audio');
-    const playPauseBtn = document.getElementById('playPause');
-    const progress = document.getElementById('progress');
-    const time = document.getElementById('time');
-    const title = document.getElementById('title');
-    const artist = document.getElementById('artist');
-    const volumeSlider = document.getElementById('volume');
-    const loopBtn = document.getElementById('loop');
-    const shuffleBtn = document.getElementById('shuffle');
+    const progressBar = document.getElementById('progress-bar');
+    const trackTitle = document.getElementById('track-title');
+    const trackArtist = document.getElementById('track-artist');
 
     const tracks = [
-      { src: 'Some.mp3', title: 'Lamppost', artist: 'Arctan – Always Remember You' },
+      { src: 'Some.mp3', title: 'Lamppost', artist: 'Always Remember You' },
       { src: 'BELIEVE.mp3', title: 'Believe', artist: 'Always Remember You' },
-      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Arcsin – Death By Deviated Septum' }
+      { src: 'Synthia.mp3', title: 'Synthia', artist: 'Always Remember You' }
     ];
-    let currentTrack = 2;
-    let isLooping = false;
-    let isShuffle = false;
+
+    let currentTrackIndex = 0;
 
     function loadTrack(index) {
-      audio.src = tracks[index].src;
-      title.textContent = tracks[index].title;
-      artist.textContent = tracks[index].artist;
-      document.getElementById('cover').style.backgroundImage = "url('cover.png')";
-      audio.load();
-      play();
-    }
-
-    function togglePlay() {
-      if (audio.paused) play();
-      else audio.pause();
-      playPauseBtn.textContent = audio.paused ? '▶️' : '⏸️';
-    }
-
-    function play() {
+      const track = tracks[index];
+      audio.src = track.src;
+      trackTitle.textContent = track.title;
+      trackArtist.textContent = track.artist;
       audio.play();
-      playPauseBtn.textContent = '⏸️';
     }
 
-    function next() {
-      if (isShuffle) {
-        currentTrack = Math.floor(Math.random() * tracks.length);
+    function togglePlayPause() {
+      if (audio.paused) {
+        audio.play();
       } else {
-        currentTrack = (currentTrack + 1) % tracks.length;
+        audio.pause();
       }
-      loadTrack(currentTrack);
     }
 
-    function previous() {
-      if (isShuffle) {
-        currentTrack = Math.floor(Math.random() * tracks.length);
-      } else {
-        currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
-      }
-      loadTrack(currentTrack);
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+    }
+
+    function previousTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
     }
 
     function updateProgress() {
-      const percent = (audio.currentTime / audio.duration) * 100;
-      progress.style.width = percent + '%';
-      time.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+      const progress = (audio.currentTime / audio.duration) * 100;
+      progressBar.style.width = progress + '%';
     }
 
-    function seek(e) {
-      const rect = e.target.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left;
-      const width = rect.width;
-      audio.currentTime = (offsetX / width) * audio.duration;
+    function setProgress(event) {
+      const width = event.currentTarget.clientWidth;
+      const clickX = event.offsetX;
+      const duration = audio.duration;
+      audio.currentTime = (clickX / width) * duration;
     }
 
-    function formatTime(t) {
-      const mins = Math.floor(t / 60);
-      const secs = Math.floor(t % 60).toString().padStart(2, '0');
-      return `${mins}:${secs}`;
+    function setVolume(value) {
+      audio.volume = value;
     }
-
-    function toggleLoop() {
-      isLooping = !isLooping;
-      audio.loop = isLooping;
-      loopBtn.style.borderColor = isLooping ? 'lime' : 'white';
-    }
-
-    function toggleShuffle() {
-      isShuffle = !isShuffle;
-      shuffleBtn.style.borderColor = isShuffle ? 'lime' : 'white';
-    }
-
-    volumeSlider.addEventListener('input', () => {
-      audio.volume = volumeSlider.value;
-    });
 
     audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('ended', () => {
-      if (!isLooping) next();
-    });
+    audio.addEventListener('ended', nextTrack);
 
     window.onload = () => {
-      loadTrack(currentTrack);
+      loadTrack(currentTrackIndex);
     };
   </script>
 </body>
